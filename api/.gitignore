@@ -1,0 +1,38 @@
+# Dependency directories
+node_modules/
+
+# Environment variables
+.env
+
+# Build output
+dist/
+build/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Operating System Files
+.DS_Store
+Thumbs.db
+
+# IDE and Editor folders
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary files
+*.tmp
+*.temp
+
+# Drizzle migration files
+drizzle/
+
+# Test coverage
+coverage/
+
+# npm package files
+package-lock.json
+yarn.lock
