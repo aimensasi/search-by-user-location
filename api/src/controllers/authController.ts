@@ -6,6 +6,7 @@ import { db } from '../db/connection';
 import { users } from '../db/schema';
 import { validationResult } from 'express-validator';
 import redisClient from '../redis/connection';
+import { generateAccessToken } from '../utils/tokenGenerator';
 
 export const register = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -21,7 +22,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     });
 
     if (existingUser) {
-      res.status(400).json({ message: 'User already exists' });
+      res.status(400).json({ message: 'username already taken' });
       return;
     }
 
@@ -29,9 +30,9 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     const user: User = { username, password: hashedPassword };
     await db.insert(users).values(user);
 
-    res.status(201).json({ message: 'User registered successfully' });
+    const accessToken = generateAccessToken(user as User);
+    res.status(201).json({ accessToken });
   } catch (error) {
-    console.error('Error registering user:', error);
     res.status(400).json({ message: 'Error registering user' });
   }
 };
@@ -54,11 +55,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 
   try {
     if (await bcrypt.compare(password, user.password)) {
-      const accessToken = jwt.sign(
-        { username: user.username },
-        process.env.ACCESS_TOKEN_SECRET as string,
-        { expiresIn: '1m' }
-      );
+      const accessToken = generateAccessToken(user as User);
       res.json({ accessToken });
     } else {
       res.status(400).json({ message: 'Incorrect password' });
@@ -81,7 +78,6 @@ export const logout = async (req: Request, res: Response): Promise<void> => {
 
     res.status(200).json({ message: 'User logged out successfully' });
   } catch (error) {
-    console.error('Error logging out:', error);
     res.status(500).json({ message: 'Error logging out' });
   }
 };
