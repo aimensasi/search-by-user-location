@@ -90,6 +90,12 @@ export const logout = async (req: Request, res: Response): Promise<void> => {
   try {
     // Store the revoked token in Redis for 1 hour
     await redisClient.set(token, 'revoked', 'EX', 3600);
+    // Clear the auth token cookie
+    res.clearCookie('accessToken', {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict'
+    });
 
     res.status(200).json({ message: 'User logged out successfully' });
   } catch (error) {

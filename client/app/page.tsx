@@ -1,31 +1,17 @@
 'use client'
 import { CountryUserMap } from '@/components/country-user-map';
 import { useAuth } from './hooks/useAuth';
-import { useRouter } from 'next/navigation';
-import { ComposableMap, Geographies, Geography } from "react-simple-maps";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { countries, getCoordinates, getLocationFromCountryName } from '@/lib/utils';
-import { error } from 'console';
 import { useState, useEffect } from 'react';
 import { useSearch } from './hooks/useSearch';
+import { Button } from '@/components/ui/button';
 
-
-const mockApi = (country: string) => {
-  const encodedLocation = encodeURIComponent(country);
-  console.log("Location", encodedLocation)
-  return new Promise<number>((resolve) => {
-    setTimeout(() => {
-      // Mock user counts (random numbers for demonstration)
-      resolve(Math.floor(Math.random() * 1000000))
-    }, 500)
-  })
-}
 
 const Home = () => {
   const { handleLogout } = useAuth();
-  const { searchByLocation } = useSearch();
-  const router = useRouter();
+  const { searchByLocation, error: searchError } = useSearch();
 
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null)
   const [userCount, setUserCount] = useState<number | null>(null)
@@ -55,8 +41,15 @@ const Home = () => {
     <div>
       <Card className="w-full w-3/5 mx-auto mt-4">
         <CardHeader>
-          <CardTitle>Country User Map</CardTitle>
-          <CardDescription>Select a country to see its user count</CardDescription>
+          <div className="flex justify-between">
+            <div>
+              <CardTitle>Country User Map</CardTitle>
+              <CardDescription>Select a country to see its user count</CardDescription>
+            </div>
+            <div>
+              <Button onClick={handleLogout}>Exit</Button>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <Select onValueChange={setSelectedCountry}>
@@ -73,9 +66,9 @@ const Home = () => {
           </Select>
 
           {isLoading && <p>Loading...</p>}
-          {error && <p className="text-red-500">{error}</p>}
+          {error || searchError && <p className="text-red-500">{error || searchError}</p>}
 
-          {selectedCountry && userCount !== null && (
+          {!searchError && selectedCountry && userCount !== null && (
             <CountryUserMap selectedCountry={selectedCountry} userCount={userCount} coordinates={getCoordinates(selectedCountry)} />
           )}
         </CardContent>

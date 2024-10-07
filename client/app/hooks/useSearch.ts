@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { login, register, logout, getUserCount } from '../services/api';
+import { getUserCount } from '../services/api';
 
 export const useSearch = () => {
   const [error, setError] = useState<string | null>(null);
@@ -9,10 +8,10 @@ export const useSearch = () => {
     try {
       const res = await getUserCount(selectedCountry);
       const data = res.data;
-
+      console.log('data', data)
       return data.total_count;
     } catch (err) {
-      setError('Registration failed');
+      setError('Failed to get user count');
     }
   };
 

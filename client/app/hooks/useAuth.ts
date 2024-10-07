@@ -9,7 +9,6 @@ export const useAuth = () => {
   const handleRegister = async (username: string, password: string) => {
     try {
       const res = await register(username, password);
-      console.log('res', res)
       router.push('/');
     } catch (err) {
       setError('Registration failed');
@@ -17,10 +16,8 @@ export const useAuth = () => {
   };
 
   const handleLogin = async (username: string, password: string) => {
-    console.log('handleLogin', username, password)
     try {
       const res = await login(username, password);
-      console.log('res', res)
       router.push('/');
     } catch (err) {
       console.log('err', err)
