@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import axios from 'axios';
 import { rateLimiter } from '../utils/rateLimiter';
+import redisClient from '../redis/connection';
 
 export const getGitHubUserCount = async (req: Request, res: Response): Promise<void> => {
   const country = req.query.country as string;
@@ -11,6 +12,15 @@ export const getGitHubUserCount = async (req: Request, res: Response): Promise<v
 
   try {
     await rateLimiter.consume(req.ip as string);
+
+    // Check if the data is in cache
+    const cacheKey = `github_user_count:${country}`;
+    const cachedData = await redisClient.get(cacheKey);
+
+    if (cachedData) {
+      res.json(JSON.parse(cachedData));
+      return;
+    }
 
     const response = await axios.get(
       `https://api.github.com/search/users?q=location:${encodeURIComponent(country)}`,
@@ -25,7 +35,12 @@ export const getGitHubUserCount = async (req: Request, res: Response): Promise<v
       }
     );
 
-    res.json({ country, total_count: response.data.total_count });
+    const result = { country, total_count: response.data.total_count };
+
+    // Cache the result for 1 hour
+    await redisClient.set(cacheKey, JSON.stringify(result), 'EX', 60);
+
+    res.json(result);
   } catch (error: any) {
     if (error.response && error.response.status === 403) {
       res.status(403).json({ message: 'GitHub API rate limit exceeded' });
