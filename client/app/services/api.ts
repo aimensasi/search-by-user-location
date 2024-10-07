@@ -16,3 +16,7 @@ export const login = async (username: string, password: string) => {
 export const logout = async () => {
   await api.delete(`/auth/logout`);
 };
+
+export const getUserCount = async (country: string) => {
+  return await api.get(`/search/github-users?country=${country}`);
+};

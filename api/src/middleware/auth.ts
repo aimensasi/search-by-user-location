@@ -14,8 +14,9 @@ declare global {
 
 
 const authenticateToken = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
+  console.log('authenticateToken', req.cookies);
+  const token = req.cookies['accessToken'];
+
 
   if (token == null) {
     res.sendStatus(401);

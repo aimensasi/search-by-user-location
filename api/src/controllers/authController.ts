@@ -31,7 +31,14 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     await db.insert(users).values(user);
 
     const accessToken = generateAccessToken(user as User);
-    res.status(201).json({ accessToken });
+
+    res.cookie('accessToken', accessToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+      maxAge: 60 * 60 * 1000,
+    });
+    res.status(201).json({ message: 'User registered successfully' });
   } catch (error) {
     res.status(400).json({ message: 'Error registering user' });
   }
@@ -56,7 +63,15 @@ export const login = async (req: Request, res: Response): Promise<void> => {
   try {
     if (await bcrypt.compare(password, user.password)) {
       const accessToken = generateAccessToken(user as User);
-      res.json({ accessToken });
+
+      res.cookie('accessToken', accessToken, {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'strict',
+        maxAge: 60 * 60 * 1000,
+      });
+
+      res.json({ message: 'User logged in successfully' });
     } else {
       res.status(400).json({ message: 'Incorrect password' });
     }
